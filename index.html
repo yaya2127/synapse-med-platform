@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SYNAPSE-Med — Real-Time Emergency ICU Vital Telemetry & Alarm Dispatch Console</title>
+  <title>SYNAPSE-Med — ICU Bedside Telemetry Monitor Console</title>
   
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&family=JetBrains+Mono:wght@700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Stylesheets -->
@@ -17,357 +17,273 @@
 </head>
 <body>
 
-  <!-- Medical Station Header -->
-  <header class="med-header">
-    <div class="brand-section">
-      <div class="brand-icon">
-        <i class="fas fa-heart-pulse"></i>
-      </div>
-      <div class="brand-text">
-        <div class="title">SYNAPSE-Med Console v4.2 Pro</div>
-        <div class="sub">Addis Ababa University Medical Center — ICU Tower B</div>
-      </div>
-    </div>
-
-    <div class="header-status">
-      <div class="status-badge">
-        <span class="pulse-dot"></span>
-        <span>DUAL TELEMETRY ONLINE</span>
-      </div>
-      <button class="btn-med" id="btn-toggle-audio">
-        <i class="fas fa-volume-mute"></i> Audio Muted
-      </button>
-    </div>
-
-    <div class="header-actions">
-      <button class="btn-med" id="btn-admit-modal">
-        <i class="fas fa-user-plus" style="color:#10b981;"></i> + Admit Patient
-      </button>
-      <button class="btn-med" id="btn-simulate-shift">
-        <i class="fas fa-bolt" style="color:#f59e0b;"></i> ⚡ Shift Vitals
-      </button>
-      <button class="btn-med" id="btn-dispatch-ambulance">
-        <i class="fas fa-ambulance" style="color:#f59e0b;"></i> Dispatch Ambulance
-      </button>
-      <button class="btn-med btn-primary" id="btn-export-emr">
-        <i class="fas fa-file-medical"></i> Export EMR Report
-      </button>
-    </div>
-  </header>
-
-  <!-- Main Application Grid -->
-  <main class="app-container">
+  <!-- Physical Hardware Bedside Monitor Chassis -->
+  <div class="monitor-chassis">
     
-    <!-- Left Column: ECG & SpO2 Dual Oscilloscope & Vitals Stream -->
-    <section class="main-telemetry">
+    <!-- Top Hardware Status & Patient Ribbon -->
+    <header class="hardware-bar">
+      <div class="hardware-leds">
+        <div class="led-item">
+          <span class="led-indicator active-green"></span>
+          <span>POWER OK</span>
+        </div>
+        <div class="led-item">
+          <span class="led-indicator active-green"></span>
+          <span>ECG SYNC</span>
+        </div>
+        <div class="led-item">
+          <span class="led-indicator active-cyan"></span>
+          <span>SPO2 SENSOR</span>
+        </div>
+        <div class="led-item" style="color:var(--text-dim);">
+          <span>NIBP AUTO: 15M</span>
+        </div>
+      </div>
+
+      <div class="patient-ribbon">
+        <span class="bed-badge" id="ribbon-bed-name">BED 01 — POST-OP CARDIAC</span>
+        <span id="ribbon-patient">BEKELE T. (M/62)</span>
+        <span style="font-size:0.72rem; color:var(--text-muted);">ICU TOWER B</span>
+      </div>
+    </header>
+
+    <!-- Console Inner Screen Layout Grid -->
+    <div class="screen-grid">
       
-      <!-- Dual Canvas Oscilloscope Panel -->
-      <div class="panel ecg-screen-panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <i class="fas fa-wave-square"></i>
-            <span>DUAL-CHANNEL REAL-TIME OSCILLOSCOPE MONITOR</span>
-          </div>
-          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);" id="current-bed-title">
-            Bed 01 — Post-Op Cardiac
-          </div>
-        </div>
-
-        <div class="dual-canvas-container">
-          <!-- ECG Lead Channel -->
-          <div class="canvas-wrapper">
-            <canvas id="ecg-canvas"></canvas>
-            <div class="ecg-grid-overlay"></div>
-            <div class="ecg-readout-overlay">
-              <span>CH1: ECG</span>
-              <span>25 mm/s</span>
-              <span>10 mm/mV</span>
-              <span>LEAD: <strong id="read-lead" style="color:#fff;">Lead II</strong></span>
-              <span id="current-patient-name" style="color:#dfa951;">Patient: Bekele T. (M/62)</span>
-            </div>
-          </div>
-
-          <!-- SpO2 Plethysmogram Channel -->
-          <div class="canvas-wrapper pleth">
-            <canvas id="pleth-canvas"></canvas>
-            <div class="ecg-grid-overlay"></div>
-            <div class="ecg-readout-overlay" style="color:#06b6d4; border-color:rgba(6,182,212,0.3);">
-              <span>CH2: SpO2 PLETHYSMOGRAM</span>
-              <span>PULSE OXIMETRY WAVE</span>
-            </div>
+      <!-- Left Column: Oscilloscope Display Screens -->
+      <section class="oscilloscope-section">
+        
+        <!-- ECG Lead Channel -->
+        <div class="channel-screen ecg">
+          <canvas id="ecg-canvas"></canvas>
+          <div class="cal-overlay ecg-mark">
+            <span><span class="cal-pulse-indicator"></span> 1mV / 10mm</span>
+            <span>25 mm/s</span>
+            <span>LEAD: <strong id="read-lead" style="color:#fff;">Lead II</strong></span>
+            <span style="color:var(--ecg-neon); font-weight:800;">CH1: ECG OSCILLOSCOPE</span>
           </div>
         </div>
 
-        <div class="ecg-controls">
-          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">ELECTRODE LEAD:</span>
-          <div class="lead-selector">
-            <button class="lead-btn active" data-lead="Lead II">Lead II</button>
-            <button class="lead-btn" data-lead="Lead I">Lead I</button>
-            <button class="lead-btn" data-lead="Lead V5">Lead V5</button>
-          </div>
-          <div style="margin-left: auto; font-size: 0.75rem; color: var(--ecg-green); font-family: var(--font-mono);">
-            <i class="fas fa-check-circle"></i> DUAL SWEEP: 60 FPS SYNCHRONIZED
-          </div>
-        </div>
-      </div>
-
-      <!-- Real-Time Patient Vital Cards Grid -->
-      <div class="vitals-grid">
-        <!-- HR Card -->
-        <div class="vital-card hr">
-          <div class="vital-header">
-            <span class="vital-label">Heart Rate</span>
-            <i class="fas fa-heartbeat vital-icon" style="color:var(--ecg-green);"></i>
-          </div>
-          <div class="vital-value-row">
-            <span class="vital-value" id="val-hr">74</span>
-            <span class="vital-unit">BPM</span>
-          </div>
-          <div class="vital-status">
-            <i class="fas fa-circle" style="font-size:0.5rem;"></i> Normal Sinus Rhythm
+        <!-- SpO2 Plethysmogram Channel -->
+        <div class="channel-screen pleth">
+          <canvas id="pleth-canvas"></canvas>
+          <div class="cal-overlay pleth-mark">
+            <span>CH2: SpO2 PLETHYSMOGRAM</span>
+            <span>ARTERIAL PULSE OXIMETRY WAVE</span>
           </div>
         </div>
 
-        <!-- SpO2 Card -->
-        <div class="vital-card spo2">
-          <div class="vital-header">
-            <span class="vital-label">Blood Oxygen SpO2</span>
-            <i class="fas fa-lungs vital-icon" style="color:var(--spo2-cyan);"></i>
+        <!-- Bed Selection Chips Drawer -->
+        <div class="drawer-panel">
+          <div style="display:flex; align-items:center; justify-content:space-between; font-family:var(--font-mono); font-size:0.75rem; color:var(--text-muted);">
+            <span><i class="fas fa-bed"></i> ICU WARD BEDS (8 STATIONS)</span>
+            <span>SELECT BED TO MONITOR</span>
           </div>
-          <div class="vital-value-row">
-            <span class="vital-value" id="val-spo2">98</span>
-            <span class="vital-unit">%</span>
-          </div>
-          <div class="vital-status" style="color:var(--spo2-cyan);">
-            <i class="fas fa-check"></i> Optimal Perfusion
+          <div class="bed-chip-grid" id="bed-chip-grid">
+            <!-- Bed Chips Rendered Dynamically -->
           </div>
         </div>
 
-        <!-- Blood Pressure NIBP Card -->
-        <div class="vital-card bp">
-          <div class="vital-header">
-            <span class="vital-label">Blood Pressure NIBP</span>
-            <i class="fas fa-compress-alt vital-icon" style="color:var(--nibp-blue);"></i>
-          </div>
-          <div class="vital-value-row">
-            <span class="vital-value" id="val-bp">120/80</span>
-            <span class="vital-unit">mmHg</span>
-          </div>
-          <div class="vital-status" style="color:var(--nibp-blue);">
-            <i class="fas fa-check"></i> MAP: 93 mmHg
-          </div>
-        </div>
+      </section>
 
-        <!-- Respiration Rate Card -->
-        <div class="vital-card rr">
-          <div class="vital-header">
-            <span class="vital-label">Resp Rate</span>
-            <i class="fas fa-wind vital-icon" style="color:#a855f7;"></i>
+      <!-- Right Column: Clinical Vital Numeric Towers -->
+      <aside class="vital-tower">
+        
+        <!-- HR Block -->
+        <div class="vital-block hr" id="block-hr">
+          <div class="vital-top-row">
+            <span class="vital-tag">HR / PULSE</span>
+            <span class="alarm-limits-bracket">[120 ⇡  50 ⇣]</span>
           </div>
-          <div class="vital-value-row">
-            <span class="vital-value" id="val-rr">16</span>
-            <span class="vital-unit">/min</span>
-          </div>
-          <div class="vital-status" style="color:#a855f7;">
-            <i class="fas fa-check"></i> Eupnea
-          </div>
-        </div>
-
-        <!-- Body Temp Card -->
-        <div class="vital-card temp">
-          <div class="vital-header">
-            <span class="vital-label">Body Temp</span>
-            <i class="fas fa-thermometer-half vital-icon" style="color:var(--temp-amber);"></i>
-          </div>
-          <div class="vital-value-row">
-            <span class="vital-value" id="val-temp">36.8</span>
-            <span class="vital-unit">°C</span>
-          </div>
-          <div class="vital-status" style="color:var(--temp-amber);">
-            <i class="fas fa-check"></i> Afebrile
-          </div>
-        </div>
-      </div>
-
-      <!-- Pharmacological Drug Infusion Titration Calculator -->
-      <div class="panel" style="margin-top: 20px;">
-        <div class="panel-header">
-          <div class="panel-title">
-            <i class="fas fa-syringes" style="color:var(--accent-gold);"></i>
-            <span>PHARMACOLOGICAL DRUG INFUSION TITRATION CALCULATOR</span>
-          </div>
-        </div>
-
-        <div class="drug-calc-grid">
-          <div class="drug-input-group">
-            <label class="drug-label">Select ICU Medication</label>
-            <select class="drug-select" id="drug-select">
-              <option value="norepinephrine">Norepinephrine (Levophed)</option>
-              <option value="amiodarone">Amiodarone (Cordarone)</option>
-              <option value="propofol">Propofol (Diprivan)</option>
-              <option value="dobutamine">Dobutamine</option>
-            </select>
-          </div>
-
-          <div class="drug-input-group">
-            <label class="drug-label">Patient Weight (kg)</label>
-            <input type="number" class="drug-input" id="drug-weight" value="70" step="1">
-          </div>
-
-          <div class="drug-input-group">
-            <label class="drug-label">Target Dose (mcg/kg/min or mg/min)</label>
-            <input type="number" class="drug-input" id="drug-dose" value="0.05" step="0.01">
-          </div>
-        </div>
-
-        <div class="drug-result-box">
-          <div>
-            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">REQUIRED PUMP INFUSION RATE:</div>
-            <div style="font-size:0.72rem; color:var(--text-dim);">Standard Concentration titrator algorithm</div>
-          </div>
-          <div class="rate-val" id="drug-result-rate">13.1 mL/hr</div>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- Right Column: NEWS2 Calculator, Bed Matrix & Ambulance Dispatch -->
-    <aside class="sidebar-telemetry">
-      
-      <!-- NEWS2 Sepsis & Arrhythmia Early Warning Calculator -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <i class="fas fa-calculator" style="color:var(--accent-gold);"></i>
-            <span>NEWS2 CLINICAL RISK EVALUATOR</span>
-          </div>
-        </div>
-
-        <div class="news2-meter-box">
-          <div class="news2-score-display" id="news2-score-display">0</div>
-          <div class="news2-risk-label" id="news2-risk-label">LOW CLINICAL RISK</div>
-          <div class="news2-protocol" id="news2-protocol-text">
-            ✅ Standard ICU ward telemetry monitoring routine q4h - q6h.
-          </div>
-        </div>
-      </div>
-
-      <!-- ICU Bed Allocation Matrix -->
-      <div class="panel" style="margin-top: 20px;">
-        <div class="panel-header">
-          <div class="panel-title">
-            <i class="fas fa-bed"></i>
-            <span>ICU WARD BED MONITORING MATRIX</span>
-          </div>
-        </div>
-
-        <div class="triage-filter-bar">
-          <input type="text" class="triage-input" id="triage-input" placeholder="🔍 Search patient, bed #, or arrhythmia...">
-        </div>
-
-        <div class="bed-matrix-grid" id="bed-matrix-grid">
-          <!-- Dynamically Rendered Beds 1-8 -->
-        </div>
-      </div>
-
-      <!-- Emergency Ambulance Dispatch Slicer -->
-      <div class="panel" style="margin-top: 20px;">
-        <div class="panel-header">
-          <div class="panel-title">
-            <i class="fas fa-truck-medical" style="color:#f59e0b;"></i>
-            <span>MOBILE TELEMETRY DISPATCH FLEET</span>
-          </div>
-        </div>
-
-        <div class="dispatch-list">
-          <div class="dispatch-item">
+          <div class="vital-num-row">
             <div>
-              <div class="dispatch-unit"><i class="fas fa-ambulance" style="color:#10b981;"></i> Ambulance Unit Alpha-1</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">Equipped with 12-Lead ECG & Defibrillator</div>
+              <span class="vital-num" id="val-hr">74</span>
+              <span class="vital-unit">BPM</span>
             </div>
-            <div class="dispatch-eta">ETA: 4 MIN</div>
+            <i class="fas fa-heartbeat" style="font-size:1.5rem; color:var(--ecg-neon);"></i>
           </div>
-          <div class="dispatch-item">
-            <div>
-              <div class="dispatch-unit"><i class="fas fa-ambulance" style="color:#3b82f6;"></i> Ambulance Unit Bravo-3</div>
-              <div style="font-size:0.72rem; color:var(--text-muted);">Mobile ICU Transport Unit</div>
-            </div>
-            <div class="dispatch-eta" style="color:var(--text-dim);">STANDBY</div>
+          <div class="vital-substatus">
+            <span>ST SEGMENT: +0.02mV</span>
+            <span>NSR RHYTHM</span>
           </div>
         </div>
+
+        <!-- SpO2 Block -->
+        <div class="vital-block spo2" id="block-spo2">
+          <div class="vital-top-row">
+            <span class="vital-tag">SpO2 OXYGEN</span>
+            <span class="alarm-limits-bracket">[100 ⇡  92 ⇣]</span>
+          </div>
+          <div class="vital-num-row">
+            <div>
+              <span class="vital-num" id="val-spo2">98</span>
+              <span class="vital-unit">%</span>
+            </div>
+            <i class="fas fa-lungs" style="font-size:1.5rem; color:var(--spo2-cyan);"></i>
+          </div>
+          <div class="vital-substatus">
+            <span>PERFUSION INDEX: 4.2</span>
+            <span>OPTIMAL</span>
+          </div>
+        </div>
+
+        <!-- NIBP Block -->
+        <div class="vital-block bp" id="block-bp">
+          <div class="vital-top-row">
+            <span class="vital-tag">NIBP SYS / DIA</span>
+            <span class="alarm-limits-bracket">[140 ⇡  90 ⇣]</span>
+          </div>
+          <div class="vital-num-row">
+            <div>
+              <span class="vital-num" id="val-bp" style="font-size:2.2rem;">120/80</span>
+              <span class="vital-unit">mmHg</span>
+            </div>
+            <i class="fas fa-compress-alt" style="font-size:1.5rem; color:var(--nibp-yellow);"></i>
+          </div>
+          <div class="vital-substatus">
+            <span>MEAN ART (MAP): 93</span>
+            <span>MANUAL CUFF</span>
+          </div>
+        </div>
+
+        <!-- Resp Block -->
+        <div class="vital-block rr" id="block-rr">
+          <div class="vital-top-row">
+            <span class="vital-tag">RESP RATE</span>
+            <span class="alarm-limits-bracket">[ 25 ⇡   8 ⇣]</span>
+          </div>
+          <div class="vital-num-row">
+            <div>
+              <span class="vital-num" id="val-rr">16</span>
+              <span class="vital-unit">/min</span>
+            </div>
+            <i class="fas fa-wind" style="font-size:1.5rem; color:var(--resp-magenta);"></i>
+          </div>
+          <div class="vital-substatus">
+            <span>IMPEDANCE PNEUMOGRAPHY</span>
+          </div>
+        </div>
+
+        <!-- Temp Block -->
+        <div class="vital-block temp" id="block-temp">
+          <div class="vital-top-row">
+            <span class="vital-tag">BODY TEMP</span>
+            <span class="alarm-limits-bracket">[38.5 ⇡ 35.0 ⇣]</span>
+          </div>
+          <div class="vital-num-row">
+            <div>
+              <span class="vital-num" id="val-temp">36.8</span>
+              <span class="vital-unit">°C</span>
+            </div>
+            <i class="fas fa-thermometer-half" style="font-size:1.5rem; color:var(--temp-orange);"></i>
+          </div>
+          <div class="vital-substatus">
+            <span>SKIN PROBE T1</span>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- Physical Hardware Control Rocker Panel -->
+    <footer class="rocker-panel">
+      <div style="display:flex; gap:10px;">
+        <button class="rocker-btn alarm-btn" id="btn-silence-alarm">
+          <i class="fas fa-bell-slash"></i> ALARM SILENCE (2m)
+        </button>
+        <button class="rocker-btn" id="btn-nibp-start">
+          <i class="fas fa-compress-alt" style="color:var(--nibp-yellow);"></i> NIBP START
+        </button>
+        <button class="rocker-btn" id="btn-print-strip">
+          <i class="fas fa-print"></i> PRINT STRIP
+        </button>
+        <button class="rocker-btn" id="btn-speed-toggle">
+          <i class="fas fa-tachometer-alt"></i> SPEED: 25mm/s
+        </button>
+        <button class="rocker-btn" id="btn-toggle-audio">
+          <i class="fas fa-volume-mute"></i> AUDIO MUTED
+        </button>
       </div>
 
-    </aside>
+      <div style="display:flex; gap:10px;">
+        <button class="rocker-btn" id="btn-drug-modal">
+          <i class="fas fa-syringes" style="color:var(--nibp-yellow);"></i> DRUG TITRATOR
+        </button>
+        <button class="rocker-btn primary-btn" id="btn-admit-modal">
+          <i class="fas fa-user-plus"></i> + ADMIT PATIENT
+        </button>
+      </div>
+    </footer>
 
-  </main>
+  </div>
 
   <!-- Patient Admission Modal -->
   <div class="modal-backdrop" id="modal-admit">
-    <div class="modal-content">
+    <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">+ Admit New ICU Patient</div>
+        <div class="modal-title">+ ADMIT NEW ICU PATIENT</div>
         <button class="modal-close">&times;</button>
       </div>
       <form id="form-admit">
-        <div class="drug-input-group" style="margin-bottom:12px;">
-          <label class="drug-label">Patient Full Name</label>
-          <input type="text" class="drug-input" id="admit-name" required placeholder="e.g. Alemayehu T.">
+        <div class="field-group">
+          <label class="field-label">Patient Full Name</label>
+          <input type="text" class="field-input" id="admit-name" required placeholder="e.g. ALEMAYEHU T.">
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-          <div class="drug-input-group">
-            <label class="drug-label">Age</label>
-            <input type="number" class="drug-input" id="admit-age" value="45" required>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="field-group">
+            <label class="field-label">Age</label>
+            <input type="number" class="field-input" id="admit-age" value="50" required>
           </div>
-          <div class="drug-input-group">
-            <label class="drug-label">Gender</label>
-            <select class="drug-select" id="admit-gender">
+          <div class="field-group">
+            <label class="field-label">Gender</label>
+            <select class="field-select" id="admit-gender">
               <option value="M">Male (M)</option>
               <option value="F">Female (F)</option>
             </select>
           </div>
         </div>
-        <div class="drug-input-group" style="margin-bottom:16px;">
-          <label class="drug-label">Primary ICU Diagnosis</label>
-          <input type="text" class="drug-input" id="admit-diag" required placeholder="e.g. Acute Myocardial Infarction">
+        <div class="field-group" style="margin-bottom:16px;">
+          <label class="field-label">Primary ICU Diagnosis</label>
+          <input type="text" class="field-input" id="admit-diag" required placeholder="e.g. Post-CABG Telemetry">
         </div>
-        <button type="submit" class="btn-med btn-primary" style="width:100%; justify-content:center;">
-          Confirm Admission & Allocate Bed
+        <button type="submit" class="rocker-btn primary-btn" style="width:100%; justify-content:center;">
+          CONFIRM ADMISSION & ASSIGN BED
         </button>
       </form>
     </div>
   </div>
 
-  <!-- Shift Simulation Modal -->
-  <div class="modal-backdrop" id="modal-simulate">
-    <div class="modal-content">
+  <!-- Drug Titrator Modal -->
+  <div class="modal-backdrop" id="modal-drug">
+    <div class="modal-box">
       <div class="modal-header">
-        <div class="modal-title">⚡ Simulate Patient Vital Shift</div>
+        <div class="modal-title">💉 PHARMACOLOGICAL DRUG INFUSION TITRATOR</div>
         <button class="modal-close">&times;</button>
       </div>
-      <form id="form-simulate">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
-          <div class="drug-input-group">
-            <label class="drug-label">Heart Rate (BPM)</label>
-            <input type="number" class="drug-input" id="sim-hr" value="130">
-          </div>
-          <div class="drug-input-group">
-            <label class="drug-label">SpO2 (%)</label>
-            <input type="number" class="drug-input" id="sim-spo2" value="89">
-          </div>
+      <div class="field-group">
+        <label class="field-label">ICU Medication</label>
+        <select class="field-select" id="drug-select">
+          <option value="norepinephrine">Norepinephrine (Levophed)</option>
+          <option value="amiodarone">Amiodarone (Cordarone)</option>
+          <option value="propofol">Propofol (Diprivan)</option>
+          <option value="dobutamine">Dobutamine</option>
+        </select>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+        <div class="field-group">
+          <label class="field-label">Patient Weight (kg)</label>
+          <input type="number" class="field-input" id="drug-weight" value="70">
         </div>
-        <div class="drug-input-group" style="margin-bottom:16px;">
-          <label class="drug-label">Cardiac Rhythm / Arrhythmia</label>
-          <select class="drug-select" id="sim-arrhythmia">
-            <option value="NSR">Normal Sinus Rhythm (NSR)</option>
-            <option value="STEMI">STEMI (ST Elevation)</option>
-            <option value="VTACH">Ventricular Tachycardia (V-Tach)</option>
-            <option value="AFIB">Atrial Fibrillation (A-Fib)</option>
-          </select>
+        <div class="field-group">
+          <label class="field-label">Target Dose (mcg/kg/min)</label>
+          <input type="number" class="field-input" id="drug-dose" value="0.05" step="0.01">
         </div>
-        <button type="submit" class="btn-med btn-primary" style="width:100%; justify-content:center;">
-          Apply Simulated Shift to Active Bed
-        </button>
-      </form>
+      </div>
+      <div style="background:#040810; border:1px solid #182a3f; border-radius:8px; padding:14px; margin-top:10px; text-align:center;">
+        <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">REQUIRED PUMP INFUSION RATE:</div>
+        <div style="font-family:var(--font-mono); font-size:2rem; font-weight:900; color:var(--nibp-yellow);" id="drug-result-rate">13.1 mL/hr</div>
+      </div>
     </div>
   </div>
 

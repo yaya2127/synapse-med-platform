@@ -1,27 +1,25 @@
 /* ==========================================================================
-   SYNAPSE-Med — Clinical Dark Slate Design System
+   SYNAPSE-Med — Physical Bedside Medical Monitor Console Design System
    ========================================================================== */
 
 :root {
-  --bg-dark: #060911;
-  --bg-panel: rgba(15, 23, 42, 0.92);
-  --bg-panel-hover: rgba(30, 41, 59, 0.95);
-  --border-slate: rgba(51, 65, 85, 0.5);
-  --border-gold: rgba(223, 169, 81, 0.4);
+  --chassis-bg: #020509;
+  --bezel-border: #111d2c;
+  --bezel-inner: #040810;
   
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  
-  --ecg-green: #10b981;
-  --spo2-cyan: #06b6d4;
-  --nibp-blue: #3b82f6;
-  --temp-amber: #f59e0b;
-  --alert-red: #ef4444;
-  --accent-gold: #dfa951;
+  --text-bright: #ffffff;
+  --text-dim: #5a738e;
+  --text-muted: #8ba3c1;
 
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --ecg-neon: #00e676;     /* High-Visibility Neon Green */
+  --spo2-cyan: #00e5ff;     /* Oxygen Pulse Cyan */
+  --nibp-yellow: #ffd600;   /* Blood Pressure Yellow */
+  --resp-magenta: #e040fb;  /* Respiration Magenta */
+  --temp-orange: #ff9100;   /* Temperature Orange */
+  --alarm-crimson: #ff1744; /* Emergency Red */
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
 }
 
 * {
@@ -31,153 +29,112 @@
 }
 
 body {
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  background-color: var(--chassis-bg);
+  color: var(--text-bright);
   font-family: var(--font-sans);
   min-height: 100vh;
-  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
   overflow-x: hidden;
+  user-select: none;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-dark);
-}
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 3px;
+/* Outer Hardware Monitor Chassis */
+.monitor-chassis {
+  width: 100%;
+  max-width: 1680px;
+  background: #08101a;
+  border: 14px solid var(--bezel-border);
+  border-radius: 24px;
+  box-shadow: 
+    0 0 0 2px #000,
+    0 25px 60px rgba(0, 0, 0, 0.9),
+    inset 0 0 30px rgba(0, 0, 0, 0.8);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Header Navbar */
-.med-header {
-  height: 64px;
-  background: rgba(10, 15, 26, 0.98);
-  border-bottom: 1px solid var(--border-slate);
+/* Simulated Screen Glass Sheen & Scanlines */
+.monitor-chassis::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, rgba(0,0,0,0.2) 100%);
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Top Hardware Status Bar */
+.hardware-bar {
+  background: #060c14;
+  border-bottom: 2px solid #142233;
+  height: 52px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(12px);
 }
 
-.brand-section {
+.hardware-leds {
   display: flex;
   align-items: center;
-  gap: 14px;
-}
-
-.brand-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ecg-green);
-  font-size: 1.25rem;
-}
-
-.brand-text .title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: #fff;
-}
-.brand-text .sub {
+  gap: 16px;
+  font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--text-muted);
-  font-family: var(--font-mono);
 }
 
-.header-status {
+.led-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.led-indicator {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #102a1d;
+}
+.led-indicator.active-green {
+  background: var(--ecg-neon);
+  box-shadow: 0 0 10px var(--ecg-neon);
+}
+.led-indicator.active-cyan {
+  background: var(--spo2-cyan);
+  box-shadow: 0 0 10px var(--spo2-cyan);
+}
+
+.patient-ribbon {
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.status-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--ecg-green);
-}
-
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--ecg-green);
-  box-shadow: 0 0 10px var(--ecg-green);
-  animation: pulse-glow 1.5s infinite;
-}
-
-@keyframes pulse-glow {
-  0% { transform: scale(0.95); opacity: 0.7; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.7; }
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.btn-med {
-  padding: 8px 16px;
-  border-radius: 8px;
+  font-family: var(--font-mono);
   font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  border: 1px solid var(--border-slate);
-  background: rgba(30, 41, 59, 0.6);
-  color: var(--text-main);
+  color: #fff;
+  font-weight: 700;
 }
-.btn-med:hover {
-  background: rgba(51, 65, 85, 0.8);
-  border-color: var(--text-muted);
-}
-.btn-med.btn-primary {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  border-color: var(--border-gold);
-  color: var(--accent-gold);
-}
-.btn-med.btn-primary:hover {
-  background: var(--accent-gold);
-  color: #0f172a;
+.patient-ribbon .bed-badge {
+  background: #00e676;
+  color: #040911;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-weight: 900;
 }
 
-/* Layout Grid */
-.app-container {
-  padding: 24px;
-  max-width: 1700px;
-  margin: 0 auto;
+/* Console Inner Screen Layout Grid */
+.screen-grid {
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 24px;
+  grid-template-columns: 1fr 380px;
+  background: var(--bezel-inner);
+  min-height: 720px;
 }
 
-@media (max-width: 1200px) {
-  .app-container {
+@media (max-width: 1280px) {
+  .screen-grid {
     grid-template-columns: 1fr;
   }
 }
