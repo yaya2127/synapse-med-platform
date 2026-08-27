@@ -35,8 +35,11 @@
           <span class="led-indicator active-cyan"></span>
           <span>SPO2 SENSOR</span>
         </div>
-        <div class="led-item" style="color:var(--text-dim);">
-          <span>NIBP AUTO: 15M</span>
+        <div class="led-item" style="color:var(--nibp-yellow); cursor:pointer;" id="led-nibp-auto">
+          <i class="fas fa-clock"></i> <span id="text-nibp-auto">NIBP AUTO: 15M</span>
+        </div>
+        <div class="led-item" style="color:var(--ecg-neon);">
+          <i class="fas fa-battery-full"></i> <span>UPS: 99% (AC ON)</span>
         </div>
       </div>
 
@@ -186,6 +189,14 @@
 
     </div>
 
+    <!-- Clinical Event Log Ticker Bar -->
+    <div class="event-ticker-bar">
+      <span><i class="fas fa-history" style="color:var(--nibp-yellow);"></i> RECENT CLINICAL EVENTS:</span>
+      <div class="event-ticker-item">
+        <i class="fas fa-check-circle"></i> <span id="event-log-text">09:54:02 — Bed 01: Normal Sinus Rhythm (HR 74 BPM, SpO2 98%)</span>
+      </div>
+    </div>
+
     <!-- Physical Hardware Control Rocker Panel -->
     <footer class="rocker-panel">
       <div style="display:flex; gap:10px;">
@@ -284,6 +295,37 @@
         <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">REQUIRED PUMP INFUSION RATE:</div>
         <div style="font-family:var(--font-mono); font-size:2rem; font-weight:900; color:var(--nibp-yellow);" id="drug-result-rate">13.1 mL/hr</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Thermal ECG Rhythm Strip Modal -->
+  <div class="modal-backdrop" id="modal-strip">
+    <div class="modal-box" style="width:720px;">
+      <div class="modal-header">
+        <div class="modal-title">🖨️ THERMAL ECG TELEMETRY RHYTHM STRIP (25 mm/s)</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="thermal-strip-box">
+        <div class="thermal-header">
+          <span>ADDIS ABABA UNIVERSITY MEDICAL CENTER — ICU TOWER B</span>
+          <span id="strip-timestamp">2026-08-27 10:04:12</span>
+        </div>
+        <div style="font-size:0.8rem; font-weight:bold; margin-bottom:8px;">
+          PATIENT: <span id="strip-patient-name">BEKELE T. (M/62)</span> | <span id="strip-bed-name">BED 01</span> | LEAD: Lead II | CAL: 1mV / 10mm
+        </div>
+        <div style="height:120px; border:1px solid #000; position:relative; background:#fff; overflow:hidden;">
+          <canvas id="strip-canvas" width="650" height="120"></canvas>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:8px; font-weight:bold;">
+          <span>HR: <span id="strip-hr">74</span> BPM</span>
+          <span>SpO2: <span id="strip-spo2">98</span>%</span>
+          <span>NIBP: 120/80 mmHg</span>
+          <span>PHYSICIAN SIGN-OFF: ___________________</span>
+        </div>
+      </div>
+      <button class="rocker-btn primary-btn" id="btn-print-action" style="width:100%; justify-content:center; margin-top:16px;">
+        <i class="fas fa-print"></i> PRINT / SAVE PDF RHYTHM STRIP
+      </button>
     </div>
   </div>
 

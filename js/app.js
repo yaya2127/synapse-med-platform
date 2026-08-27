@@ -151,9 +151,86 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // NIBP Auto-Interval Cycle
+  const nibpIntervals = ["5M", "10M", "15M", "30M", "60M", "STAT"];
+  let nibpIdx = 2; // Default 15M
+  const ledNibpAuto = document.getElementById('led-nibp-auto');
+  const textNibpAuto = document.getElementById('text-nibp-auto');
+
+  if (ledNibpAuto) {
+    ledNibpAuto.addEventListener('click', () => {
+      nibpIdx = (nibpIdx + 1) % nibpIntervals.length;
+      if (textNibpAuto) textNibpAuto.textContent = `NIBP AUTO: ${nibpIntervals[nibpIdx]}`;
+      showToast(`NIBP Automatic Cycle Set to ${nibpIntervals[nibpIdx]}`);
+    });
+  }
+
+  // Thermal Strip Modal
+  const modalStrip = document.getElementById('modal-strip');
+  const btnPrintAction = document.getElementById('btn-print-action');
+
+  function drawThermalStrip(bed) {
+    const stripCanvas = document.getElementById('strip-canvas');
+    if (!stripCanvas) return;
+    const ctx = stripCanvas.getContext('2d');
+    ctx.clearRect(0, 0, 650, 120);
+
+    // Draw Grid Red
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(239, 68, 68, 0.2)';
+    for (let x = 0; x < 650; x += 10) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 120); ctx.stroke();
+    }
+    for (let y = 0; y < 120; y += 10) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(650, y); ctx.stroke();
+    }
+
+    // Draw 1mV Cal Pulse
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000';
+    ctx.moveTo(10, 60); ctx.lineTo(15, 60); ctx.lineTo(15, 20); ctx.lineTo(28, 20); ctx.lineTo(28, 60); ctx.lineTo(35, 60);
+    ctx.stroke();
+
+    // Draw ECG Lead Wave
+    ctx.beginPath();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#000';
+
+    const period = (60 / bed.hr) * 60;
+    for (let x = 35; x < 650; x++) {
+      const phase = ((x * 2) % period) / period;
+      let sample = 0;
+      if (phase >= 0.10 && phase < 0.20) sample = -Math.sin((phase - 0.10) / 0.10 * Math.PI) * 6;
+      else if (phase >= 0.40 && phase < 0.44) sample = -Math.sin((phase - 0.40) / 0.04 * Math.PI) * 45;
+      else if (phase >= 0.60 && phase < 0.75) sample = -Math.sin((phase - 0.60) / 0.15 * Math.PI) * 12;
+      
+      const y = 60 + sample;
+      if (x === 35) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
   if (btnPrintStrip) {
     btnPrintStrip.addEventListener('click', () => {
-      showToast("🖨️ Printing 25mm/s Thermal Telemetry ECG Strip...");
+      const current = bedsData.find(b => b.id === activeBedId);
+      if (current && modalStrip) {
+        document.getElementById('strip-patient-name').textContent = current.patient;
+        document.getElementById('strip-bed-name').textContent = current.name.split('—')[0].trim();
+        document.getElementById('strip-hr').textContent = current.hr;
+        document.getElementById('strip-spo2').textContent = current.spo2;
+        document.getElementById('strip-timestamp').textContent = new Date().toLocaleString();
+        drawThermalStrip(current);
+        modalStrip.classList.add('open');
+        showToast("🖨️ Generated Thermal 25mm/s Rhythm Strip");
+      }
+    });
+  }
+
+  if (btnPrintAction) {
+    btnPrintAction.addEventListener('click', () => {
+      window.print();
     });
   }
 
