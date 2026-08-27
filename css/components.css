@@ -1,0 +1,351 @@
+/* ==========================================================================
+   SYNAPSE-Med — Component Styles (ECG Canvas, Vitals, NEWS2, Bed Grid)
+   ========================================================================== */
+
+/* Panel Component */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-slate);
+  border-radius: 14px;
+  padding: 20px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  transition: border-color 0.2s ease;
+}
+.panel:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+.panel-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: -0.01em;
+}
+.panel-title i {
+  color: var(--ecg-green);
+}
+
+/* ECG Oscilloscope Screen */
+.ecg-screen-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  background: #020617;
+  border-radius: 10px;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  overflow: hidden;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+#ecg-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ecg-grid-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+}
+
+.ecg-readout-overlay {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ecg-green);
+  display: flex;
+  gap: 16px;
+  background: rgba(2, 6, 23, 0.7);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.ecg-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.lead-selector {
+  display: flex;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-slate);
+  border-radius: 8px;
+  padding: 2px;
+}
+.lead-btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.lead-btn.active {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--ecg-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+/* Vitals Cards Grid */
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.vital-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-slate);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.vital-card:hover {
+  transform: translateY(-2px);
+}
+
+.vital-card.hr { border-left: 4px solid var(--ecg-green); }
+.vital-card.spo2 { border-left: 4px solid var(--spo2-cyan); }
+.vital-card.bp { border-left: 4px solid var(--nibp-blue); }
+.vital-card.rr { border-left: 4px solid #a855f7; }
+.vital-card.temp { border-left: 4px solid var(--temp-amber); }
+
+.vital-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.vital-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.vital-icon {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.vital-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.vital-value {
+  font-family: var(--font-mono);
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+}
+.vital-unit {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.vital-status {
+  margin-top: 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--ecg-green);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.vital-card.alert .vital-status { color: var(--alert-red); }
+
+/* NEWS2 Calculator Meter */
+.news2-meter-box {
+  background: rgba(2, 6, 23, 0.8);
+  border: 1px solid var(--border-slate);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.news2-score-display {
+  font-family: var(--font-mono);
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--ecg-green);
+}
+.news2-score-display.medium { color: var(--temp-amber); }
+.news2-score-display.high { color: var(--alert-red); }
+
+.news2-risk-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.news2-protocol {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 6px;
+}
+
+/* ICU Bed Matrix */
+.bed-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.bed-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border-slate);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bed-card:hover {
+  border-color: var(--text-muted);
+  background: rgba(30, 41, 59, 0.6);
+}
+.bed-card.active {
+  border-color: var(--ecg-green);
+  background: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+}
+.bed-card.critical {
+  border-color: var(--alert-red);
+  background: rgba(239, 68, 68, 0.1);
+  animation: alert-blink 2s infinite;
+}
+
+@keyframes alert-blink {
+  0%, 100% { border-color: rgba(239, 68, 68, 0.4); }
+  50% { border-color: var(--alert-red); }
+}
+
+.bed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+}
+.bed-patient {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bed-vitals-mini {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+/* Ambulance Telemetry Dispatcher */
+.dispatch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dispatch-item {
+  background: rgba(2, 6, 23, 0.6);
+  border: 1px solid var(--border-slate);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dispatch-unit {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: #fff;
+}
+.dispatch-eta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent-gold);
+}
+
+/* Toast Alerts */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--border-gold);
+  border-left: 4px solid var(--accent-gold);
+  border-radius: 10px;
+  padding: 12px 18px;
+  color: #fff;
+  font-size: 0.82rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

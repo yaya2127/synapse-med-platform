@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SYNAPSE-Med — Real-Time Emergency ICU Vital Telemetry & Alarm Dispatch Console</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+  <!-- Medical Station Header -->
+  <header class="med-header">
+    <div class="brand-section">
+      <div class="brand-icon">
+        <i class="fas fa-heart-pulse"></i>
+      </div>
+      <div class="brand-text">
+        <div class="title">SYNAPSE-Med Console v4.2</div>
+        <div class="sub">Addis Ababa University Medical Center — ICU Tower B</div>
+      </div>
+    </div>
+
+    <div class="header-status">
+      <div class="status-badge">
+        <span class="pulse-dot"></span>
+        <span>TELEMETRY ONLINE (8 BEDS CONNECTED)</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-med" id="btn-dispatch-ambulance">
+        <i class="fas fa-ambulance" style="color:#f59e0b;"></i> Dispatch Ambulance
+      </button>
+      <button class="btn-med btn-primary" id="btn-export-emr">
+        <i class="fas fa-file-medical"></i> Export EMR Report
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Application Grid -->
+  <main class="app-container">
+    
+    <!-- Left Column: ECG Waveform & Vitals Stream -->
+    <section class="main-telemetry">
+      
+      <!-- ECG Canvas Oscilloscope Panel -->
+      <div class="panel ecg-screen-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fas fa-wave-square"></i>
+            <span>12-LEAD ECG REAL-TIME OSCILLOSCOPE MONITOR</span>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);" id="current-bed-title">
+            Bed 01 — Post-Op Cardiac
+          </div>
+        </div>
+
+        <div class="canvas-wrapper">
+          <canvas id="ecg-canvas"></canvas>
+          <div class="ecg-grid-overlay"></div>
+          <div class="ecg-readout-overlay">
+            <span>25 mm/s</span>
+            <span>10 mm/mV</span>
+            <span>LEAD: <strong id="read-lead" style="color:#fff;">Lead II</strong></span>
+            <span id="current-patient-name" style="color:#dfa951;">Patient: Bekele T. (M/62)</span>
+          </div>
+        </div>
+
+        <div class="ecg-controls">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);">ELECTRODE LEAD:</span>
+          <div class="lead-selector">
+            <button class="lead-btn active" data-lead="Lead II">Lead II</button>
+            <button class="lead-btn" data-lead="Lead I">Lead I</button>
+            <button class="lead-btn" data-lead="Lead V5">Lead V5</button>
+          </div>
+          <div style="margin-left: auto; font-size: 0.75rem; color: var(--ecg-green); font-family: var(--font-mono);">
+            <i class="fas fa-check-circle"></i> SWEEP FREQUENCY: 60 FPS
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Patient Vital Cards Grid -->
+      <div class="vitals-grid">
+        <!-- HR Card -->
+        <div class="vital-card hr">
+          <div class="vital-header">
+            <span class="vital-label">Heart Rate</span>
+            <i class="fas fa-heartbeat vital-icon" style="color:var(--ecg-green);"></i>
+          </div>
+          <div class="vital-value-row">
+            <span class="vital-value" id="val-hr">74</span>
+            <span class="vital-unit">BPM</span>
+          </div>
+          <div class="vital-status">
+            <i class="fas fa-circle" style="font-size:0.5rem;"></i> Normal Sinus Rhythm
+          </div>
+        </div>
+
+        <!-- SpO2 Card -->
+        <div class="vital-card spo2">
+          <div class="vital-header">
+            <span class="vital-label">Blood Oxygen SpO2</span>
+            <i class="fas fa-lungs vital-icon" style="color:var(--spo2-cyan);"></i>
+          </div>
+          <div class="vital-value-row">
+            <span class="vital-value" id="val-spo2">98</span>
+            <span class="vital-unit">%</span>
+          </div>
+          <div class="vital-status" style="color:var(--spo2-cyan);">
+            <i class="fas fa-check"></i> Optimal Perfusion
+          </div>
+        </div>
+
+        <!-- Blood Pressure NIBP Card -->
+        <div class="vital-card bp">
+          <div class="vital-header">
+            <span class="vital-label">Blood Pressure NIBP</span>
+            <i class="fas fa-compress-alt vital-icon" style="color:var(--nibp-blue);"></i>
+          </div>
+          <div class="vital-value-row">
+            <span class="vital-value" id="val-bp">120/80</span>
+            <span class="vital-unit">mmHg</span>
+          </div>
+          <div class="vital-status" style="color:var(--nibp-blue);">
+            <i class="fas fa-check"></i> MAP: 93 mmHg
+          </div>
+        </div>
+
+        <!-- Respiration Rate Card -->
+        <div class="vital-card rr">
+          <div class="vital-header">
+            <span class="vital-label">Resp Rate</span>
+            <i class="fas fa-wind vital-icon" style="color:#a855f7;"></i>
+          </div>
+          <div class="vital-value-row">
+            <span class="vital-value" id="val-rr">16</span>
+            <span class="vital-unit">/min</span>
+          </div>
+          <div class="vital-status" style="color:#a855f7;">
+            <i class="fas fa-check"></i> Eupnea
+          </div>
+        </div>
+
+        <!-- Body Temp Card -->
+        <div class="vital-card temp">
+          <div class="vital-header">
+            <span class="vital-label">Body Temp</span>
+            <i class="fas fa-thermometer-half vital-icon" style="color:var(--temp-amber);"></i>
+          </div>
+          <div class="vital-value-row">
+            <span class="vital-value" id="val-temp">36.8</span>
+            <span class="vital-unit">°C</span>
+          </div>
+          <div class="vital-status" style="color:var(--temp-amber);">
+            <i class="fas fa-check"></i> Afebrile
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: NEWS2 Calculator, Bed Matrix & Ambulance Dispatch -->
+    <aside class="sidebar-telemetry">
+      
+      <!-- NEWS2 Sepsis & Arrhythmia Early Warning Calculator -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fas fa-calculator" style="color:var(--accent-gold);"></i>
+            <span>NEWS2 CLINICAL RISK EVALUATOR</span>
+          </div>
+        </div>
+
+        <div class="news2-meter-box">
+          <div class="news2-score-display" id="news2-score-display">0</div>
+          <div class="news2-risk-label" id="news2-risk-label">LOW CLINICAL RISK</div>
+          <div class="news2-protocol" id="news2-protocol-text">
+            ✅ Standard ICU ward telemetry monitoring routine q4h - q6h.
+          </div>
+        </div>
+      </div>
+
+      <!-- ICU Bed Allocation Matrix -->
+      <div class="panel" style="margin-top: 20px;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fas fa-bed"></i>
+            <span>ICU WARD BED MONITORING MATRIX</span>
+          </div>
+        </div>
+
+        <div class="bed-matrix-grid" id="bed-matrix-grid">
+          <!-- Dynamically Rendered Beds 1-8 -->
+        </div>
+      </div>
+
+      <!-- Emergency Ambulance Dispatch Slicer -->
+      <div class="panel" style="margin-top: 20px;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fas fa-truck-medical" style="color:#f59e0b;"></i>
+            <span>MOBILE TELEMETRY DISPATCH FLEET</span>
+          </div>
+        </div>
+
+        <div class="dispatch-list">
+          <div class="dispatch-item">
+            <div>
+              <div class="dispatch-unit"><i class="fas fa-ambulance" style="color:#10b981;"></i> Ambulance Unit Alpha-1</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Equipped with 12-Lead ECG & Defibrillator</div>
+            </div>
+            <div class="dispatch-eta">ETA: 4 MIN</div>
+          </div>
+          <div class="dispatch-item">
+            <div>
+              <div class="dispatch-unit"><i class="fas fa-ambulance" style="color:#3b82f6;"></i> Ambulance Unit Bravo-3</div>
+              <div style="font-size:0.72rem; color:var(--text-muted);">Mobile ICU Transport Unit</div>
+            </div>
+            <div class="dispatch-eta" style="color:var(--text-dim);">STANDBY</div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="js/ecg.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
