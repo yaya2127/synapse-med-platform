@@ -20,7 +20,7 @@
   <!-- Physical Hardware Bedside Monitor Chassis -->
   <div class="monitor-chassis">
     
-    <!-- Top Hardware Status & Patient Ribbon -->
+    <!-- Top Hardware Status Bar (Tier 1: LEDs & Patient Info) -->
     <header class="hardware-bar">
       <div class="hardware-leds">
         <div class="led-item">
@@ -49,6 +49,36 @@
         <span style="font-size:0.72rem; color:var(--text-muted);">ICU TOWER B</span>
       </div>
     </header>
+
+    <!-- Top Hardware Action Control Bar (Tier 2: Rocker Controls) -->
+    <div class="rocker-panel header-actions-bar">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="rocker-btn alarm-btn" id="btn-silence-alarm">
+          <i class="fas fa-bell-slash"></i> ALARM SILENCE (2m)
+        </button>
+        <button class="rocker-btn" id="btn-nibp-start">
+          <i class="fas fa-compress-alt" style="color:var(--nibp-yellow);"></i> NIBP START
+        </button>
+        <button class="rocker-btn" id="btn-print-strip">
+          <i class="fas fa-print"></i> PRINT STRIP
+        </button>
+        <button class="rocker-btn" id="btn-speed-toggle">
+          <i class="fas fa-tachometer-alt"></i> SPEED: 25mm/s
+        </button>
+        <button class="rocker-btn" id="btn-toggle-audio">
+          <i class="fas fa-volume-mute"></i> AUDIO MUTED
+        </button>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="rocker-btn" id="btn-drug-modal">
+          <i class="fas fa-syringes" style="color:var(--nibp-yellow);"></i> DRUG TITRATOR
+        </button>
+        <button class="rocker-btn primary-btn" id="btn-admit-modal">
+          <i class="fas fa-user-plus"></i> + ADMIT PATIENT
+        </button>
+      </div>
+    </div>
 
     <!-- Console Inner Screen Layout Grid -->
     <div class="screen-grid">
@@ -196,36 +226,6 @@
         <i class="fas fa-check-circle"></i> <span id="event-log-text">09:54:02 — Bed 01: Normal Sinus Rhythm (HR 74 BPM, SpO2 98%)</span>
       </div>
     </div>
-
-    <!-- Physical Hardware Control Rocker Panel -->
-    <footer class="rocker-panel">
-      <div style="display:flex; gap:10px;">
-        <button class="rocker-btn alarm-btn" id="btn-silence-alarm">
-          <i class="fas fa-bell-slash"></i> ALARM SILENCE (2m)
-        </button>
-        <button class="rocker-btn" id="btn-nibp-start">
-          <i class="fas fa-compress-alt" style="color:var(--nibp-yellow);"></i> NIBP START
-        </button>
-        <button class="rocker-btn" id="btn-print-strip">
-          <i class="fas fa-print"></i> PRINT STRIP
-        </button>
-        <button class="rocker-btn" id="btn-speed-toggle">
-          <i class="fas fa-tachometer-alt"></i> SPEED: 25mm/s
-        </button>
-        <button class="rocker-btn" id="btn-toggle-audio">
-          <i class="fas fa-volume-mute"></i> AUDIO MUTED
-        </button>
-      </div>
-
-      <div style="display:flex; gap:10px;">
-        <button class="rocker-btn" id="btn-drug-modal">
-          <i class="fas fa-syringes" style="color:var(--nibp-yellow);"></i> DRUG TITRATOR
-        </button>
-        <button class="rocker-btn primary-btn" id="btn-admit-modal">
-          <i class="fas fa-user-plus"></i> + ADMIT PATIENT
-        </button>
-      </div>
-    </footer>
 
   </div>
 
