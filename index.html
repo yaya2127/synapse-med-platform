@@ -24,7 +24,7 @@
         <i class="fas fa-heart-pulse"></i>
       </div>
       <div class="brand-text">
-        <div class="title">SYNAPSE-Med Console v4.2</div>
+        <div class="title">SYNAPSE-Med Console v4.2 Pro</div>
         <div class="sub">Addis Ababa University Medical Center — ICU Tower B</div>
       </div>
     </div>
@@ -32,11 +32,20 @@
     <div class="header-status">
       <div class="status-badge">
         <span class="pulse-dot"></span>
-        <span>TELEMETRY ONLINE (8 BEDS CONNECTED)</span>
+        <span>DUAL TELEMETRY ONLINE</span>
       </div>
+      <button class="btn-med" id="btn-toggle-audio">
+        <i class="fas fa-volume-mute"></i> Audio Muted
+      </button>
     </div>
 
     <div class="header-actions">
+      <button class="btn-med" id="btn-admit-modal">
+        <i class="fas fa-user-plus" style="color:#10b981;"></i> + Admit Patient
+      </button>
+      <button class="btn-med" id="btn-simulate-shift">
+        <i class="fas fa-bolt" style="color:#f59e0b;"></i> ⚡ Shift Vitals
+      </button>
       <button class="btn-med" id="btn-dispatch-ambulance">
         <i class="fas fa-ambulance" style="color:#f59e0b;"></i> Dispatch Ambulance
       </button>
@@ -49,29 +58,43 @@
   <!-- Main Application Grid -->
   <main class="app-container">
     
-    <!-- Left Column: ECG Waveform & Vitals Stream -->
+    <!-- Left Column: ECG & SpO2 Dual Oscilloscope & Vitals Stream -->
     <section class="main-telemetry">
       
-      <!-- ECG Canvas Oscilloscope Panel -->
+      <!-- Dual Canvas Oscilloscope Panel -->
       <div class="panel ecg-screen-panel">
         <div class="panel-header">
           <div class="panel-title">
             <i class="fas fa-wave-square"></i>
-            <span>12-LEAD ECG REAL-TIME OSCILLOSCOPE MONITOR</span>
+            <span>DUAL-CHANNEL REAL-TIME OSCILLOSCOPE MONITOR</span>
           </div>
           <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);" id="current-bed-title">
             Bed 01 — Post-Op Cardiac
           </div>
         </div>
 
-        <div class="canvas-wrapper">
-          <canvas id="ecg-canvas"></canvas>
-          <div class="ecg-grid-overlay"></div>
-          <div class="ecg-readout-overlay">
-            <span>25 mm/s</span>
-            <span>10 mm/mV</span>
-            <span>LEAD: <strong id="read-lead" style="color:#fff;">Lead II</strong></span>
-            <span id="current-patient-name" style="color:#dfa951;">Patient: Bekele T. (M/62)</span>
+        <div class="dual-canvas-container">
+          <!-- ECG Lead Channel -->
+          <div class="canvas-wrapper">
+            <canvas id="ecg-canvas"></canvas>
+            <div class="ecg-grid-overlay"></div>
+            <div class="ecg-readout-overlay">
+              <span>CH1: ECG</span>
+              <span>25 mm/s</span>
+              <span>10 mm/mV</span>
+              <span>LEAD: <strong id="read-lead" style="color:#fff;">Lead II</strong></span>
+              <span id="current-patient-name" style="color:#dfa951;">Patient: Bekele T. (M/62)</span>
+            </div>
+          </div>
+
+          <!-- SpO2 Plethysmogram Channel -->
+          <div class="canvas-wrapper pleth">
+            <canvas id="pleth-canvas"></canvas>
+            <div class="ecg-grid-overlay"></div>
+            <div class="ecg-readout-overlay" style="color:#06b6d4; border-color:rgba(6,182,212,0.3);">
+              <span>CH2: SpO2 PLETHYSMOGRAM</span>
+              <span>PULSE OXIMETRY WAVE</span>
+            </div>
           </div>
         </div>
 
@@ -83,7 +106,7 @@
             <button class="lead-btn" data-lead="Lead V5">Lead V5</button>
           </div>
           <div style="margin-left: auto; font-size: 0.75rem; color: var(--ecg-green); font-family: var(--font-mono);">
-            <i class="fas fa-check-circle"></i> SWEEP FREQUENCY: 60 FPS
+            <i class="fas fa-check-circle"></i> DUAL SWEEP: 60 FPS SYNCHRONIZED
           </div>
         </div>
       </div>
@@ -165,6 +188,47 @@
           </div>
         </div>
       </div>
+
+      <!-- Pharmacological Drug Infusion Titration Calculator -->
+      <div class="panel" style="margin-top: 20px;">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fas fa-syringes" style="color:var(--accent-gold);"></i>
+            <span>PHARMACOLOGICAL DRUG INFUSION TITRATION CALCULATOR</span>
+          </div>
+        </div>
+
+        <div class="drug-calc-grid">
+          <div class="drug-input-group">
+            <label class="drug-label">Select ICU Medication</label>
+            <select class="drug-select" id="drug-select">
+              <option value="norepinephrine">Norepinephrine (Levophed)</option>
+              <option value="amiodarone">Amiodarone (Cordarone)</option>
+              <option value="propofol">Propofol (Diprivan)</option>
+              <option value="dobutamine">Dobutamine</option>
+            </select>
+          </div>
+
+          <div class="drug-input-group">
+            <label class="drug-label">Patient Weight (kg)</label>
+            <input type="number" class="drug-input" id="drug-weight" value="70" step="1">
+          </div>
+
+          <div class="drug-input-group">
+            <label class="drug-label">Target Dose (mcg/kg/min or mg/min)</label>
+            <input type="number" class="drug-input" id="drug-dose" value="0.05" step="0.01">
+          </div>
+        </div>
+
+        <div class="drug-result-box">
+          <div>
+            <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700;">REQUIRED PUMP INFUSION RATE:</div>
+            <div style="font-size:0.72rem; color:var(--text-dim);">Standard Concentration titrator algorithm</div>
+          </div>
+          <div class="rate-val" id="drug-result-rate">13.1 mL/hr</div>
+        </div>
+      </div>
+
     </section>
 
     <!-- Right Column: NEWS2 Calculator, Bed Matrix & Ambulance Dispatch -->
@@ -195,6 +259,10 @@
             <i class="fas fa-bed"></i>
             <span>ICU WARD BED MONITORING MATRIX</span>
           </div>
+        </div>
+
+        <div class="triage-filter-bar">
+          <input type="text" class="triage-input" id="triage-input" placeholder="🔍 Search patient, bed #, or arrhythmia...">
         </div>
 
         <div class="bed-matrix-grid" id="bed-matrix-grid">
@@ -232,6 +300,76 @@
     </aside>
 
   </main>
+
+  <!-- Patient Admission Modal -->
+  <div class="modal-backdrop" id="modal-admit">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">+ Admit New ICU Patient</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-admit">
+        <div class="drug-input-group" style="margin-bottom:12px;">
+          <label class="drug-label">Patient Full Name</label>
+          <input type="text" class="drug-input" id="admit-name" required placeholder="e.g. Alemayehu T.">
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="drug-input-group">
+            <label class="drug-label">Age</label>
+            <input type="number" class="drug-input" id="admit-age" value="45" required>
+          </div>
+          <div class="drug-input-group">
+            <label class="drug-label">Gender</label>
+            <select class="drug-select" id="admit-gender">
+              <option value="M">Male (M)</option>
+              <option value="F">Female (F)</option>
+            </select>
+          </div>
+        </div>
+        <div class="drug-input-group" style="margin-bottom:16px;">
+          <label class="drug-label">Primary ICU Diagnosis</label>
+          <input type="text" class="drug-input" id="admit-diag" required placeholder="e.g. Acute Myocardial Infarction">
+        </div>
+        <button type="submit" class="btn-med btn-primary" style="width:100%; justify-content:center;">
+          Confirm Admission & Allocate Bed
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Shift Simulation Modal -->
+  <div class="modal-backdrop" id="modal-simulate">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">⚡ Simulate Patient Vital Shift</div>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="form-simulate">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+          <div class="drug-input-group">
+            <label class="drug-label">Heart Rate (BPM)</label>
+            <input type="number" class="drug-input" id="sim-hr" value="130">
+          </div>
+          <div class="drug-input-group">
+            <label class="drug-label">SpO2 (%)</label>
+            <input type="number" class="drug-input" id="sim-spo2" value="89">
+          </div>
+        </div>
+        <div class="drug-input-group" style="margin-bottom:16px;">
+          <label class="drug-label">Cardiac Rhythm / Arrhythmia</label>
+          <select class="drug-select" id="sim-arrhythmia">
+            <option value="NSR">Normal Sinus Rhythm (NSR)</option>
+            <option value="STEMI">STEMI (ST Elevation)</option>
+            <option value="VTACH">Ventricular Tachycardia (V-Tach)</option>
+            <option value="AFIB">Atrial Fibrillation (A-Fib)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-med btn-primary" style="width:100%; justify-content:center;">
+          Apply Simulated Shift to Active Bed
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>

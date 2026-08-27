@@ -1,13 +1,13 @@
 /* ==========================================================================
-   SYNAPSE-Med — Main Application Orchestrator & NEWS2 Risk Engine
+   SYNAPSE-Med — Advanced Clinical Application & Drug Titration Orchestrator
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize ECG Canvas Engine
-  const ecgMonitor = new ECGMonitor('ecg-canvas');
+  // Initialize Dual Canvas Oscilloscope (ECG + SpO2 Pleth)
+  const ecgMonitor = new ECGMonitor('ecg-canvas', 'pleth-canvas');
 
   // ICU Patient Bed Dataset
-  const bedsData = [
+  let bedsData = [
     { id: 1, name: "Bed 01 — Post-Op Cardiac", patient: "Bekele T. (M/62)", hr: 74, spo2: 98, bp: "120/80", rr: 16, temp: 36.8, arrhythmia: "NSR", lead: "Lead II" },
     { id: 2, name: "Bed 02 — Telemetry Watch", patient: "Sara M. (F/48)", hr: 82, spo2: 97, bp: "128/84", rr: 18, temp: 37.1, arrhythmia: "NSR", lead: "Lead II" },
     { id: 3, name: "Bed 03 — Acute STEMI Watch", patient: "Yonas A. (M/55)", hr: 118, spo2: 91, bp: "95/60", rr: 26, temp: 38.4, arrhythmia: "STEMI", lead: "Lead V5" },
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ];
 
   let activeBedId = 1;
+  let audioMuted = true;
 
   // DOM Elements
   const valHr = document.getElementById('val-hr');
@@ -38,39 +39,50 @@ document.addEventListener('DOMContentLoaded', () => {
   const leadBtns = document.querySelectorAll('.lead-btn');
   const btnExportEmr = document.getElementById('btn-export-emr');
   const btnDispatchAmbulance = document.getElementById('btn-dispatch-ambulance');
+  const btnToggleAudio = document.getElementById('btn-toggle-audio');
+  const btnAdmitModal = document.getElementById('btn-admit-modal');
+  const btnSimulateShift = document.getElementById('btn-simulate-shift');
+  const triageInput = document.getElementById('triage-input');
   const toastContainer = document.getElementById('toast-container');
+
+  // Drug Infusion Calculator Elements
+  const drugSelect = document.getElementById('drug-select');
+  const drugWeight = document.getElementById('drug-weight');
+  const drugDose = document.getElementById('drug-dose');
+  const drugResultRate = document.getElementById('drug-result-rate');
+
+  // Modal Elements
+  const modalAdmit = document.getElementById('modal-admit');
+  const modalSimulate = document.getElementById('modal-simulate');
+  const formAdmit = document.getElementById('form-admit');
+  const formSimulate = document.getElementById('form-simulate');
+  const closeModals = document.querySelectorAll('.modal-close');
 
   // Calculate NEWS2 (National Early Warning Score)
   function calculateNEWS2(bed) {
     let score = 0;
-
-    // Respiration Rate
     if (bed.rr <= 8 || bed.rr >= 25) score += 3;
     else if (bed.rr >= 21) score += 2;
     else if (bed.rr <= 11) score += 1;
 
-    // SpO2 Scale 1
     if (bed.spo2 <= 91) score += 3;
     else if (bed.spo2 <= 93) score += 2;
     else if (bed.spo2 <= 95) score += 1;
 
-    // Heart Rate
     if (bed.hr <= 40 || bed.hr >= 131) score += 3;
     else if (bed.hr >= 111) score += 2;
     else if (bed.hr <= 50 || bed.hr >= 91) score += 1;
 
-    // Temperature
     if (bed.temp <= 35.0 || bed.temp >= 39.1) score += 3;
     else if (bed.temp >= 38.1) score += 1;
 
-    // Arrhythmia penalty
     if (bed.arrhythmia !== 'NSR') score += 2;
-
     return score;
   }
 
-  // Render NEWS2 Panel
+  // Update NEWS2 UI
   function updateNEWS2UI(score) {
+    if (!news2ScoreDisplay) return;
     news2ScoreDisplay.textContent = score;
     news2ScoreDisplay.className = 'news2-score-display';
 
@@ -96,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Render Active Patient Vitals & ECG
+  // Load Active Bed
   function loadBed(bedId) {
     activeBedId = bedId;
     const bed = bedsData.find(b => b.id === bedId);
@@ -112,27 +124,29 @@ document.addEventListener('DOMContentLoaded', () => {
     if (valRr) valRr.textContent = bed.rr;
     if (valTemp) valTemp.textContent = bed.temp.toFixed(1);
 
-    // Update ECG Engine
     if (ecgMonitor) {
       ecgMonitor.setBPM(bed.hr);
+      ecgMonitor.setSpO2(bed.spo2);
       ecgMonitor.setArrhythmia(bed.arrhythmia);
       ecgMonitor.setLead(bed.lead);
     }
 
-    // Update NEWS2 Score
     const score = calculateNEWS2(bed);
     updateNEWS2UI(score);
-
-    // Update Bed Grid Active state
     renderBedGrid();
   }
 
-  // Render ICU Beds Grid
+  // Render ICU Bed Matrix with Filter Search
   function renderBedGrid() {
     if (!bedMatrixGrid) return;
     bedMatrixGrid.innerHTML = '';
+    const query = triageInput ? triageInput.value.toLowerCase().trim() : '';
 
     bedsData.forEach(bed => {
+      if (query && !bed.name.toLowerCase().includes(query) && !bed.patient.toLowerCase().includes(query) && !bed.arrhythmia.toLowerCase().includes(query)) {
+        return;
+      }
+
       const card = document.createElement('div');
       const score = calculateNEWS2(bed);
       const isCritical = score >= 5 || bed.arrhythmia !== 'NSR';
@@ -160,7 +174,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Lead Selection
+  if (triageInput) triageInput.addEventListener('input', renderBedGrid);
+
+  // Pharmacological Drug Infusion Titration Calculator
+  function calculateDrugRate() {
+    if (!drugResultRate || !drugSelect || !drugWeight || !drugDose) return;
+
+    const drug = drugSelect.value;
+    const weight = parseFloat(drugWeight.value) || 70;
+    const dose = parseFloat(drugDose.value) || 0.05;
+
+    let rateMLHr = 0;
+
+    if (drug === 'norepinephrine') {
+      // Dose in mcg/kg/min; Standard Bag 4 mg in 250 mL D5W (16 mcg/mL)
+      const mcgPerMin = dose * weight;
+      rateMLHr = (mcgPerMin * 60) / 16;
+    } else if (drug === 'amiodarone') {
+      // Dose in mg/min; Standard Bag 450 mg in 250 mL D5W (1.8 mg/mL)
+      rateMLHr = (dose * 60) / 1.8;
+    } else if (drug === 'propofol') {
+      // Dose in mcg/kg/min; Standard 10 mg/mL (10,000 mcg/mL)
+      const mcgPerMin = dose * weight;
+      rateMLHr = (mcgPerMin * 60) / 10000;
+    } else if (drug === 'dobutamine') {
+      // Dose in mcg/kg/min; Standard 500 mg in 250 mL (2000 mcg/mL)
+      const mcgPerMin = dose * weight;
+      rateMLHr = (mcgPerMin * 60) / 2000;
+    }
+
+    drugResultRate.textContent = `${rateMLHr.toFixed(1)} mL/hr`;
+  }
+
+  if (drugSelect) drugSelect.addEventListener('change', calculateDrugRate);
+  if (drugWeight) drugWeight.addEventListener('input', calculateDrugRate);
+  if (drugDose) drugDose.addEventListener('input', calculateDrugRate);
+  calculateDrugRate();
+
+  // Audio Alarm Sound Toggle
+  if (btnToggleAudio) {
+    btnToggleAudio.addEventListener('click', () => {
+      audioMuted = !audioMuted;
+      ecgMonitor.toggleAudio(!audioMuted);
+      btnToggleAudio.innerHTML = audioMuted ? 
+        `<i class="fas fa-volume-mute"></i> Audio Muted` : 
+        `<i class="fas fa-volume-up" style="color:#10b981;"></i> QRS Beep On`;
+      showToast(audioMuted ? "Telemetry QRS Audio Muted" : "Telemetry QRS Audio Beep Activated 🔊");
+    });
+  }
+
+  // Lead Buttons
   leadBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       leadBtns.forEach(b => b.classList.remove('active'));
@@ -172,7 +235,59 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Toast Notifications
+  // Modal Control
+  if (btnAdmitModal) btnAdmitModal.addEventListener('click', () => modalAdmit.classList.add('open'));
+  if (btnSimulateShift) btnSimulateShift.addEventListener('click', () => modalSimulate.classList.add('open'));
+
+  closeModals.forEach(b => {
+    b.addEventListener('click', () => {
+      modalAdmit.classList.remove('open');
+      modalSimulate.classList.remove('open');
+    });
+  });
+
+  // Handle Admit Form
+  if (formAdmit) {
+    formAdmit.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const pName = document.getElementById('admit-name').value;
+      const pAge = document.getElementById('admit-age').value;
+      const pGender = document.getElementById('admit-gender').value;
+      const pDiag = document.getElementById('admit-diag').value;
+
+      const newId = bedsData.length + 1;
+      const newBed = {
+        id: newId,
+        name: `Bed 0${newId} — ${pDiag}`,
+        patient: `${pName} (${pGender}/${pAge})`,
+        hr: 75, spo2: 98, bp: "120/80", rr: 16, temp: 36.8,
+        arrhythmia: "NSR", lead: "Lead II"
+      };
+
+      bedsData.push(newBed);
+      modalAdmit.classList.remove('open');
+      loadBed(newId);
+      showToast(`Admitted New Patient: ${pName} to Bed 0${newId}! 🎉`);
+    });
+  }
+
+  // Handle Shift Simulation Form
+  if (formSimulate) {
+    formSimulate.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const current = bedsData.find(b => b.id === activeBedId);
+      if (current) {
+        current.hr = parseInt(document.getElementById('sim-hr').value) || current.hr;
+        current.spo2 = parseInt(document.getElementById('sim-spo2').value) || current.spo2;
+        current.arrhythmia = document.getElementById('sim-arrhythmia').value;
+        loadBed(activeBedId);
+        modalSimulate.classList.remove('open');
+        showToast(`Simulated Vital Shift for ${current.name}! ⚡`);
+      }
+    });
+  }
+
+  // Toast Alerts
   function showToast(message) {
     if (!toastContainer) return;
     const toast = document.createElement('div');
@@ -215,6 +330,10 @@ CLINICAL EARLY WARNING RISK EVALUATION (NEWS2):
 • Risk Stratification     : ${score >= 5 ? 'HIGH RISK' : 'LOW-MEDIUM RISK'}
 • ECG Lead Monitored      : ${currentBed.lead}
 
+PHARMACOLOGICAL DRUG INFUSION SUMMARY:
+-----------------------------------------------------------------
+• Norepinephrine Titration Rate: ${drugResultRate ? drugResultRate.textContent : '0 mL/hr'}
+
 Attending Physician Sign-Off: ___________________________________
 =================================================================
       `;
@@ -231,29 +350,11 @@ Attending Physician Sign-Off: ___________________________________
     });
   }
 
-  // Dispatch Emergency Ambulance Relay
   if (btnDispatchAmbulance) {
     btnDispatchAmbulance.addEventListener('click', () => {
       showToast("🚀 Emergency Telemetry Dispatch Relay Initiated! Unit Alpha-1 En Route.");
     });
   }
-
-  // Periodic Random Vital Modulation (Simulates real biological fluctuation)
-  setInterval(() => {
-    bedsData.forEach(bed => {
-      if (bed.arrhythmia === 'NSR') {
-        bed.hr += Math.floor((Math.random() - 0.5) * 3);
-        bed.hr = Math.max(60, Math.min(100, bed.hr));
-      }
-    });
-
-    // Update active bed values
-    const current = bedsData.find(b => b.id === activeBedId);
-    if (current) {
-      if (valHr) valHr.textContent = current.hr;
-      if (ecgMonitor) ecgMonitor.setBPM(current.hr);
-    }
-  }, 4000);
 
   // Initial Load Bed 1
   loadBed(1);

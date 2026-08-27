@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SYNAPSE-Med — Component Styles (ECG Canvas, Vitals, NEWS2, Bed Grid)
+   SYNAPSE-Med — Component Styles (Dual Canvas, Drug Calculator, Modals, Trends)
    ========================================================================== */
 
 /* Panel Component */
@@ -20,7 +20,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(51, 65, 85, 0.4);
 }
@@ -38,16 +38,22 @@
   color: var(--ecg-green);
 }
 
-/* ECG Oscilloscope Screen */
+/* Dual ECG + SpO2 Pleth Canvas Screens */
 .ecg-screen-panel {
   position: relative;
   overflow: hidden;
 }
 
+.dual-canvas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .canvas-wrapper {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: 220px;
   background: #020617;
   border-radius: 10px;
   border: 1px solid rgba(16, 185, 129, 0.25);
@@ -55,7 +61,12 @@
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
 }
 
-#ecg-canvas {
+.canvas-wrapper.pleth {
+  height: 110px;
+  border-color: rgba(6, 182, 212, 0.25);
+}
+
+canvas {
   width: 100%;
   height: 100%;
   display: block;
@@ -76,14 +87,14 @@
 
 .ecg-readout-overlay {
   position: absolute;
-  top: 12px;
-  left: 16px;
+  top: 10px;
+  left: 14px;
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--ecg-green);
   display: flex;
-  gap: 16px;
-  background: rgba(2, 6, 23, 0.7);
+  gap: 14px;
+  background: rgba(2, 6, 23, 0.75);
   padding: 4px 10px;
   border-radius: 6px;
   border: 1px solid rgba(16, 185, 129, 0.2);
@@ -192,7 +203,6 @@
   align-items: center;
   gap: 4px;
 }
-.vital-card.alert .vital-status { color: var(--alert-red); }
 
 /* NEWS2 Calculator Meter */
 .news2-meter-box {
@@ -231,7 +241,27 @@
   border-radius: 6px;
 }
 
-/* ICU Bed Matrix */
+/* ICU Bed Matrix & Search Filters */
+.triage-filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.triage-input {
+  flex: 1;
+  background: rgba(2, 6, 23, 0.7);
+  border: 1px solid var(--border-slate);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: #fff;
+  font-size: 0.8rem;
+  outline: none;
+}
+.triage-input:focus {
+  border-color: var(--ecg-green);
+}
+
 .bed-matrix-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -291,40 +321,100 @@
   color: var(--text-dim);
 }
 
-/* Ambulance Telemetry Dispatcher */
-.dispatch-list {
-  display: flex;
-  flex-direction: column;
+/* Pharmacological Drug Infusion Calculator */
+.drug-calc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
-.dispatch-item {
-  background: rgba(2, 6, 23, 0.6);
+.drug-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.drug-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.drug-select, .drug-input {
+  background: rgba(2, 6, 23, 0.7);
   border: 1px solid var(--border-slate);
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-family: var(--font-mono);
+}
+
+.drug-result-box {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid var(--border-gold);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 10px;
+  margin-top: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.dispatch-unit {
-  font-weight: 700;
-  font-size: 0.82rem;
-  color: #fff;
-}
-.dispatch-eta {
+.rate-val {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 800;
   color: var(--accent-gold);
 }
 
-/* Toast Alerts */
+/* Modal Windows */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-content {
+  background: #0f172a;
+  border: 1px solid var(--border-slate);
+  border-radius: 16px;
+  width: 500px;
+  max-width: 90%;
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #fff;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+/* Toast Banners */
 .toast-container {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   gap: 10px;
